@@ -1,36 +1,55 @@
 #!/bin/bash
 
-# Set the book ID
-isbn="XXXXXXXX"
-
-# Check if the ISBN directory exists, create it if it doesn't
-if [ ! -d "$isbn" ]; then
-  mkdir $isbn
+# Usage: if no args are given, print help and exit
+if [ $# -lt 2 ]; then
+  echo "Usage: $0 START_PAGE END_PAGE"
+  echo
+  echo "Example: $0 0 100"
+  echo
+  echo "Before running, edit this script and set:"
+  echo "  isbn   (your book's ISBN)"
+  echo "  cookie (your authentication cookie string)"
+  exit 1
 fi
 
-# paste the cookie here
-cookie="Cookie: Paste here" 
+# —————— User configuration ——————
+isbn=""   # ← your own ISBN
+cookie=""  # ← your full cookie here
+# ——————————————————————————————
 
-# Get the start and end page numbers from the command line
+# sanity check: make sure required vars are not empty
+if [ -z "$isbn" ] || [ -z "$cookie" ]; then
+  echo "ERROR: You must set both 'isbn' and 'cookie' at the top of this script."
+  exit 1
+fi
+
+# create directory if needed
+if [ ! -d "$isbn" ]; then
+  mkdir -p "$isbn"
+fi
+
 START_PAGE=$1
 END_PAGE=$2
 
-# Loop through the pages and download each image
-for (( i=$START_PAGE; i<$END_PAGE; i++ )); do
-    # Set the URL for the current page
-    URL="https://jigsaw.vitalsource.com/books/${isbn}/images/${i}"
+for (( i=START_PAGE; i<=END_PAGE; i++ )); do
+  URL="https://jigsaw.vitalsource.com/books/${isbn}/images/${i}"
+  FILENAME="${i}.jpg"
+  OUTPATH="${isbn}/${FILENAME}"
 
-    # Set the output filename as the page number
-    FILENAME="${i}.jpg"
+  curl -s \
+    -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/112.0' \
+    -H "${cookie}" \
+    "$URL" -o "$OUTPATH"
 
-    # Send the request with cookie headers and save the image
-    curl -s -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/112.0' -H "${cookie}" $URL -o "$isbn/$FILENAME"
-    
-    # Print a message indicating the status of the download
-    if [ -f $FILENAME ]; then
-        echo "Downloaded page ${i} - Don't be a bot - Wait 4 seconds"
-        sleep 4
-    else
-        echo "Failed to download page ${i}"
-    fi
+  # small pause to let the file system catch up
+  sleep 1
+
+  # check in the isbn directory, not the current one
+  if [ -f "$OUTPATH" ]; then
+    echo "Downloaded page ${i} → ${OUTPATH}. waiting 2 seconds…"
+    sleep 2
+  else
+    echo "Failed to download page ${i}"
+    sleep 2
+  fi
 done

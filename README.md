@@ -1,3 +1,5 @@
+## Updated/Working May 2025
+
 # vitalsource_downloader
 Simple script to download Vitalsource book
 
@@ -19,6 +21,10 @@ To use the script, follow these steps:
 5. Type chmod +x vitalsource.sh to make the script executable.
 6. Type ./vitalsource.sh <start_page> <end_page> where <start_page> and <end_page> are the page numbers of the book images to download.
 
+
+# ISBN/Cookie In Chrome
+![](Cookie_ISBN.png)
+
 For example, to download pages 1 to 10, type `./vitalsource.sh 1 10`
 
 Note: the script will create a directory named after the ISBN number of the book in the same directory where the script is run. If the directory already exists, the script will continue downloading images to that directory.
@@ -26,4 +32,8 @@ Note: the script will create a directory named after the ISBN number of the book
 After downloading all images you can convert it to pdf using img2pdf tool by following command 
 
 `img2pdf $(ls $folder_name/*.jpg | sort -n) -o "$folder_name.pdf"`
+
+# Python make_pdf.py
+
+If you can't get img2pdf to work, try the python script. `python make_pdf.py ./abc -o abc.pdf`
 
